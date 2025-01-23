@@ -1,25 +1,24 @@
 using JuMP
-using Gurobi  # Gurobi solver
+using Gurobi
+using Plots 
 
 # Parameters
-π = [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]  # Equal probabilities for 10 scenarios
-P_DA_t = rand(50:100, 96)  # Random day-ahead prices between 50 and 100
-P_imb_t_ω = [rand(40:110, 96) for _ in 1:10]  # Random imbalance prices for 10 scenarios
+T = 1:365  # Daily time steps for one year
+Ω = 1:3  # Scenarios
+π = [0.1 for _ in Ω]  # Equal probabilities for 10 scenarios
+P_DA_t = rand(50:100, 365)  # Random daily prices between 50 and 100 for a year
+P_imb_t_ω = [rand(40:110, 365) for _ in Ω]  # Imbalance prices for each scenario
 η_c = 0.95      # Charging efficiency
 η_d = 0.95      # Discharging efficiency
-Δt = 1.0        # Time step
+Δt = 1.0        # Time step (1 day)
 SoC_init = 50.0 # Initial state of charge (in kWh)
-SoC_min = 0.0   # Minimum state of charge (in kWh)
-SoC_max = 100.0 # Maximum state of charge (in kWh)
+SoC_min = 10.0   # Minimum state of charge (in kWh)
+SoC_max = 90.0 # Maximum state of charge (in kWh)
 Pd_max = 50.0   # Maximum discharge power (kW)
 Pc_max = 50.0   # Maximum charge power (kW)
 
-# Sets
-T = 1:96  # Time steps (15-min intervals for a day)
-Ω = 1:10  # Scenarios
-
 # Model
-model = Model(Gurobi.Optimizer)
+model = Model(optimizer_with_attributes(Gurobi.Optimizer, "OutputFlag" => 0)) 
 
 # Decision variables
 @variable(model, e_DA_t_plus[t in T] >= 0)  # Day-ahead energy bought
@@ -28,7 +27,7 @@ model = Model(Gurobi.Optimizer)
 @variable(model, e_imb_minus[t in T, ω in Ω] >= 0) # Imbalance energy sold
 @variable(model, z_DA_t[t in T], Bin)  # Binary for charging/discharging in DA
 @variable(model, z_t[t in T], Bin)     # Binary for charging/discharging in imbalance
-@variable(model, SoC[t in T] >= SoC_min, SoC <= SoC_max)  # State of charge (kWh)
+@variable(model, SoC_min <= SoC[t in T] <= SoC_max)  # State of charge (kWh)
 
 # Objective function: Maximize expected revenues
 @objective(model, Max,
@@ -51,7 +50,26 @@ model = Model(Gurobi.Optimizer)
 optimize!(model)
 
 # Display results
-println("Objective value: ", objective_value(model))
-println("Day-ahead energy bought (e_DA_t_plus): ", value.(e_DA_t_plus))
-println("Day-ahead energy sold (e_DA_t_minus): ", value.(e_DA_t_minus))
-println("State of charge (SoC): ", value.(SoC))
+using Printf
+
+@printf("Objective value: %.2f\n", objective_value(model))
+
+e_DA_t_plus_array = collect(round.(value.(e_DA_t_plus), digits=2))
+println("e_DA_t_plus: ", e_DA_t_plus_array)
+
+e_DA_t_minus_array = collect(round.(value.(e_DA_t_minus), digits=2))
+println("e_DA_t_minus: ", e_DA_t_minus_array)
+
+SoC_array = collect(round.(value.(SoC), digits=2))
+println("SoC: ", SoC_array)
+
+# Plot results
+p1 = plot(T, e_DA_t_plus_array, label="Day-Ahead Energy Bought", xlabel="Days", ylabel="Energy (kWh)", title="Energy Bought Over a Year", lw=2)
+display(p1)
+
+p2 = plot(T, e_DA_t_minus_array, label="Day-Ahead Energy Sold", xlabel="Days", ylabel="Energy (kWh)", title="Energy Sold Over a Year", lw=2, color=:orange)
+display(p2)
+
+p3 = plot(T, SoC_array, label="State of Charge", xlabel="Days", ylabel="Energy (kWh)", title="State of Charge Over a Year", lw=2, color=:green)
+display(p3)
+
