@@ -1,12 +1,21 @@
 using JuMP
 using Gurobi
 using Plots 
+using Pkg
+using XLSX
+
+# Load the Excel file
+xf = XLSX.readxlsx("extrapolated_prices_stable_res.xlsx")
+sh = xf["Sheet1"]
+sheet_data = sh[:]
+P_DA_t = sheet_data[2:end, 3]
 
 # Parameters
-T = 1:365  # Daily time steps for one year
+T = 1:length(P_DA_t)  # Daily time steps for one year
 Ω = 1:3  # Scenarios
 π = [0.1 for _ in Ω]  # Equal probabilities for 10 scenarios
-P_DA_t = rand(50:100, 365)  # Random daily prices between 50 and 100 for a year
+
+#P_DA_t = rand(50:100, 365)  # Random daily prices between 50 and 100 for a year
 P_imb_t_ω = [rand(40:110, 365) for _ in Ω]  # Imbalance prices for each scenario
 η_c = 0.95      # Charging efficiency
 η_d = 0.95      # Discharging efficiency
