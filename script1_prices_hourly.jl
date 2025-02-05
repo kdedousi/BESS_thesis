@@ -9,7 +9,10 @@ function load_initial_prices()
 
     data_dam = DataFrame(raw_data_dam[1], raw_data_dam[2])
     data_imbalance = DataFrame(raw_data_imbalance[1], raw_data_imbalance[2])
-
+    
+    data_dam = data_dam[1:100, :]
+    data_imbalance = data_imbalance[1:100, :]
+    
     # Define stable RES values
     RES_current = 50000000
     RES_future = 60000000
