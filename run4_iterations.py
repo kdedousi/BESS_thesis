@@ -19,15 +19,7 @@ def run_iterations(df, max_capacity, step, SoC_init, annualized_cost_value, bess
     initial_prices_path = os.path.join(output_dir, "initial_extrapolated_prices.xlsx")
     df.to_excel(initial_prices_path, index=False)
 
-    num_days = len(df) // 24  # Total number of days
-    
     while capacity <= max_capacity:
-        SoC_day = SoC_init  # Reset SoC for each capacity iteration
-        
-        for day in range(num_days):
-            start_idx = day * 24
-            end_idx = start_idx + 24
-
         # Get updated prices
         P_DA_t = df["Extrapolated_DAM_Price"]
         P_imb_t_ω = df["Extrapolated_Imbalance_Price"]
@@ -133,16 +125,13 @@ def annualized_cost(capex, opex, lifetime, discount_rate):
     return capex * annuity_factor + opex
 
 # Define cost parameters
-CAPEX = 375_000  # € per MWh (1.5M €/MW for 4-hour battery -> 1.5M/4)
-OPEX = 7_500     # € per MWh/year
+CAPEX = 200_000  # € per MWh
+OPEX = 1_000     # € per MWh/year
 lifetime = 30    # years
 discount_rate = 0.05  
 
 # Compute annualized cost
 annualized_cost_value = annualized_cost(CAPEX, OPEX, lifetime, discount_rate)
-
-# Print the annualized cost value
-print(f"Annualized Cost Value: {annualized_cost_value}")
 
 RES_current = 50_000_000 # Current renewable energy sources (MWh)
 RES_future = 60_000_000 # Future renewable energy sources (MWh)
@@ -153,6 +142,6 @@ price_per_mwh_bess = 0.02 # Price per MWh of BESS
 df = load_initial_prices(RES_current, RES_future, price_per_mwh_res)
 
 # Run iterations (you need to define bess_optimization)
-run_iterations(df, 50.0, 50.0, 50.0, annualized_cost_value, bess_optimization, price_per_mwh_bess)
+run_iterations(df, 1500.0, 100.0, 50.0, annualized_cost_value, bess_optimization, price_per_mwh_bess)
 
 print("Results saved to 'final_results.xlsx'")
