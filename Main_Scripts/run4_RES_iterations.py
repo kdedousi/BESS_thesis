@@ -178,10 +178,10 @@ def run_iterations(df, max_capacity, step, output_dir,
 
                 if saturation_point is None and marginal_net_revenue <= 0:
                     saturation_point = total_capacity
-                    print(f"\n📌 Saturation point found at {saturation_point} MW")
+                    print(f"\n Saturation point found at {saturation_point} MW")
 
                 if saturation_point is not None and total_capacity >= saturation_point + 400:
-                    print(f"⛔ Reached limit after saturation: {total_capacity} MW")
+                    print(f" Reached limit after saturation: {total_capacity} MW")
                     break
 
             for i in range(1, len(revenue_debug)):
@@ -193,7 +193,7 @@ def run_iterations(df, max_capacity, step, output_dir,
                     # Linear interpolation
                     saturation_point = cap1 + (0 - rev1) * (cap2 - cap1) / (rev2 - rev1)
 
-                    print(f"\n📌 Financial saturation point (marginal net revenue = 0) reached at: {saturation_point:.2f} MW")
+                    print(f"\n Financial saturation point (marginal net revenue = 0) reached at: {saturation_point:.2f} MW")
                     break
 
 
