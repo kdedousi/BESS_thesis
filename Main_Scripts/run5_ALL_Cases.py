@@ -74,7 +74,7 @@ def main():
             coefficients_res["aFRR Down Contracted"]
         )
 
-        print(f"\n🚀 Running case {idx:03d} — CAPEX={CAPEX}, OPEX={OPEX}, RES={RES_share}, t={t} → {output_dir}")
+        print(f"\n Running case {idx:03d} — CAPEX={CAPEX}, OPEX={OPEX}, RES={RES_share}, t={t} → {output_dir}")
         saturation_point = run_iterations(
             df=df,
             max_capacity=15000,
